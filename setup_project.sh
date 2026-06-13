@@ -5,10 +5,10 @@
 script_cancel()
 {     
       echo "script interrupted"
-      tar -cf "attendance_tracker_${input}_archive" "attendance_tracker_${input}"
+      tar -cf "attendance_tracker_"${input}"_archive" "attendance_tracker_"${input}""
       echo "succesfully bundled the directory into an archive"
 
-      rm -rf attendance_tracker_${input}
+      rm -rf attendance_tracker_"${input}"
       echo "deleted the directory"
       exit 0
 }
@@ -23,11 +23,12 @@ do
 		echo "User must enter an input"
 	fi
 done
-mkdir attendance_tracker_${input}
-echo "Create the directory attendance_tracker_${input}, using the input"
+mkdir attendance_tracker_"${input}"
+echo "Create the directory attendance_tracker_"${input}", using the input"
 #trap after having the input
 sleep 2
-cat > attendance_tracker_${input}/attendance_checker.py << 'script'
+touch attendance_checker.py
+cat > attendance_tracker_"${input}"/attendance_checker.py << 'script'
 import csv
 import json
 import os
@@ -74,18 +75,17 @@ def run_attendance_check():
 if __name__ == "__main__":
     run_attendance_check()
 script
-mkdir attendance_tracker_${input}/Helpers
+mkdir attendance_tracker_"${input}"/Helpers
 echo "Created the Helpers directory and copied assets.csv and config.json into the directory"
 sleep 2
-cat > attendance_tracker_${input}/Helpers/assets.csv << '2script'
+cat > attendance_tracker_"${input}"/Helpers/assets.csv << '2script'
 Email,Names,Attendance Count,Absence Count
 alice@example.com,Alice Johnson,14,1
 bob@example.com,Bob Smith,7,8
 charlie@example.com,Charlie Davis,4,11
 diana@example.com,Diana Prince,15,0
 2script
-sleep 2
-cat > attendance_tracker_${input}/Helpers/config.json << 'threshold'
+cat > attendance_tracker_"${input}"/Helpers/config.json << 'threshold'
 {
     "thresholds": {
         "warning": 75,
@@ -96,9 +96,8 @@ cat > attendance_tracker_${input}/Helpers/config.json << 'threshold'
 }
 threshold
 sleep 2
-mkdir attendance_tracker_${input}/reports
-sleep 2
-cat > attendance_tracker_${input}/reports/reports.log << 'run'
+mkdir attendance_tracker_"${input}"/reports
+cat > attendance_tracker_"${input}"/reports/reports.log << 'run'
 --- Attendance Report Run: 2026-02-06 18:10:01.468726 ---
 [2026-02-06 18:10:01.469363] ALERT SENT TO bob@example.com: URGENT: Bob Smith, your attendance is 46.7%. You will fail this class.
 [2026-02-06 18:10:01.469424] ALERT SENT TO charlie@example.com: URGENT: Charlie Davis, your attendance is 26.7%. You will fail this class.
@@ -110,7 +109,7 @@ sleep 2
 while true
 do
 	read -p "what is the new value for Warning: " new_warning
-	if (( new_warning )) 2>/dev/null; then
+	if (( new_warning )) 2>/dev/null && (( new_warning >= 0 && new_warning <= 100 )); then
 		break
 	else
 		echo "Please enter a number:"
@@ -119,13 +118,13 @@ done
 while true
 do 
 	read -p "What is the new value for Failure: " new_failure
-	if (( new_failure )) 2>/dev/null; then
+	if (( new_failure )) 2>/dev/null  && (( new_failure >= 0 && new_failure <= 100 )); then
 	    break
 	else
 		echo "please enter a valid value, a number"
 	fi
 done
-sed -i -e "s/75/$new_warning/g" -e "s/50/$new_failure/g" attendance_tracker_${input}/Helpers/config.json
+sed -i -e "s/75/$new_warning/g" -e "s/50/$new_failure/g" attendance_tracker_"${input}"/Helpers/config.json
 sleep 2
 #4.Environment validation using a Health_Check function
 Health_Check()
@@ -135,6 +134,21 @@ Health_Check()
 	else
 		echo "Warning: python3 not installed"
 	fi
-	
-
-
+	expected="
+attendance_tracker_${input}
+attendance_tracker_${input}/attendance_checker.py
+attendance_tracker_${input}/Helpers
+attendance_tracker_${input}/Helpers/assets.csv
+attendance_tracker_${input}/Helpers/config.json
+attendance_tracker_${input}/reports
+attendance_tracker_${input}/reports/reports.log"
+	find attendance_tracker_"${input}" | sort -f
+	#printf 'ACTUAL:\n%s\n' "$(find "attendance_tracker_${input}" | sort -f)"
+#printf 'EXPECTED:\n%s\n' "$(printf '%s\n' "$expected" | sort -f)"
+	if [ "$(find "attendance_tracker_${input}" | sort -f)"\ = "$printf '%s\n' "$expected" | sort -f)" ]; then
+		echo "the directory structure is followed"
+	else
+		echo "the directory structure is not followed"
+	fi
+}
+Health_Check	
