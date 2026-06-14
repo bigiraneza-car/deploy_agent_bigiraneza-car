@@ -17,17 +17,17 @@ trap script_cancel SIGINT
 until false
 do	
 	read -p "User input:" input
-	if [ -n "$input" ]; then
-		break
-	else
+	if [ -z "$input" ]; then
 		echo "User must enter an input"
+	elif [[ "$input" == *" "* ]]; then
+		echo " Input must not contain spaces. Use _ or in one word"
+	else
+		break
 	fi
 done
 mkdir attendance_tracker_"${input}"
 echo "Create the directory attendance_tracker_"${input}", using the input"
-#trap after having the input
 sleep 2
-touch attendance_checker.py
 cat > attendance_tracker_"${input}"/attendance_checker.py << 'script'
 import csv
 import json
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     run_attendance_check()
 script
 mkdir attendance_tracker_"${input}"/Helpers
-echo "Created the Helpers directory and copied assets.csv and config.json into the directory"
+echo "Created the Helpers directory and copy assets.csv and config.json into the directory"
 sleep 2
 cat > attendance_tracker_"${input}"/Helpers/assets.csv << '2script'
 Email,Names,Attendance Count,Absence Count
@@ -112,7 +112,7 @@ do
 	if (( new_warning )) 2>/dev/null && (( new_warning >= 0 && new_warning <= 100 )); then
 		break
 	else
-		echo "Please enter a number:"
+		echo "Please enter a number between 0 and 100"
 	fi
 done
 while true
@@ -121,7 +121,7 @@ do
 	if (( new_failure )) 2>/dev/null  && (( new_failure >= 0 && new_failure <= 100 )); then
 	    break
 	else
-		echo "please enter a valid value, a number"
+		echo "please enter a valid value, a number between 0 and 100"
 	fi
 done
 sed -i -e "s/75/$new_warning/g" -e "s/50/$new_failure/g" attendance_tracker_"${input}"/Helpers/config.json
@@ -134,18 +134,15 @@ Health_Check()
 	else
 		echo "Warning: python3 not installed"
 	fi
-	expected="
-attendance_tracker_${input}
+	expected="attendance_tracker_${input}
 attendance_tracker_${input}/attendance_checker.py
 attendance_tracker_${input}/Helpers
 attendance_tracker_${input}/Helpers/assets.csv
 attendance_tracker_${input}/Helpers/config.json
 attendance_tracker_${input}/reports
 attendance_tracker_${input}/reports/reports.log"
-	find attendance_tracker_"${input}" | sort -f
-	#printf 'ACTUAL:\n%s\n' "$(find "attendance_tracker_${input}" | sort -f)"
-#printf 'EXPECTED:\n%s\n' "$(printf '%s\n' "$expected" | sort -f)"
-	if [ "$(find "attendance_tracker_${input}" | sort -f)"\ = "$printf '%s\n' "$expected" | sort -f)" ]; then
+
+	if [ "$(find "attendance_tracker_${input}" | sort -f)" = "$(printf '%s\n' "$expected" | sort -f)" ]; then
 		echo "the directory structure is followed"
 	else
 		echo "the directory structure is not followed"
