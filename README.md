@@ -21,5 +21,6 @@ Here it is ./setup_project.sh and enter an input when prompted "The user must en
 - The signal SIGINT is caught by a "trap" command that calls the function containing the "tar" command that creates the archive.
 - Then, "tar" saves the current state of the ran script into an archive and exit.
 
-N.B: Watch the video explaining the code in the Video file.
+N.B: Watch through the link below the video explaining my script.
+Video: https://drive.google.com/file/d/18lcgr_6ChVBVM8RCk0h9JUoUTXtcIx4V/view?usp=sharing 
  
